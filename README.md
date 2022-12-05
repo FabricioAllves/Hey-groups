@@ -1,5 +1,5 @@
 
-<h1 align="center">DevPost-rede-social</h1>
+<h1 align="center">Hey-Groups</h1>
 
 
 <img alt="gif-cell" src="https://github.com/fabricio-26/Hey-groups/blob/main/src/assets/HeyGrupos.png">
