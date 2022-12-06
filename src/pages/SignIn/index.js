@@ -1,11 +1,56 @@
 import React, { useState } from 'react';
 import { View, SafeAreaView, Text, StyleSheet, TouchableOpacity, TextInput, Platform } from 'react-native';
 
+import auth from '@react-native-firebase/auth'
+import { useNavigation } from '@react-navigation/native';
+
 export default function SignIn() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassWord] = useState('');
   const [type, setType] = useState(false);  //false === Tela Login | true === cadastro
+
+  const navigation = useNavigation();
+
+
+  function handleLogin() {
+    if (type) {
+      // Cadastrar usuario
+      if (name === '' | email === '' | password === '') return;
+
+      auth().createUserWithEmailAndPassword(email, password)
+        .then((user) => {
+          user.user.updateProfile({
+            displayName: name
+          })
+            .then(() => {
+              navigation.goBack();
+            })
+        })
+        .catch((error) => {
+          if (error.code === 'auth/email-already-in-use') {
+            console.log("E-mail já em uso!")
+          }
+
+          if (error.code === 'auth/invalid-email') {
+            console.log("E-mail invalido!")
+          }
+        })
+
+    } else {
+      // Logar usuario
+
+      auth().signInWithEmailAndPassword(email, password)
+        .then(() => {
+          navigation.goBack();
+        })
+        .catch((error) => {
+          if (error.code === 'auth/invalid-email') {
+            console.log("E-mail invalido!")
+          }
+        })
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -36,9 +81,13 @@ export default function SignIn() {
         onChangeText={(text) => setPassWord(text)}
         placeholder="Password"
         placeholderTextColor='#99999b'
+        secureTextEntry={true}
       />
 
-      <TouchableOpacity style={[styles.buttonLogin, { backgroundColor: type ? "#51c880" : "#2e54d4" }]}>
+      <TouchableOpacity
+        style={[styles.buttonLogin, { backgroundColor: type ? "#51c880" : "#2e54d4" }]}
+        onPress={handleLogin}
+      >
         <Text style={styles.buttonText}>
           {type ? 'Cadastrar' : 'Acessar'}
         </Text>
