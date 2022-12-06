@@ -4,7 +4,7 @@ import { View, Text, StyleSheet } from 'react-native';
 export default function Search() {
   return (
     <View style={styles.container}>
-      <Text>Tela Procurar</Text>H
+      <Text>Tela Procurar</Text>
     </View>
   );
 }
