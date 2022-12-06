@@ -1,24 +1,64 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, SafeAreaView, TouchableOpacity, FlatList } from 'react-native';
 
 import auth from '@react-native-firebase/auth'
 import { useNavigation } from '@react-navigation/native'
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 export default function ChatRoom() {
   const navigation = useNavigation()
 
+  function handleSignOut(){
+    auth()
+    .signOut()
+    .then(()=>{
+      navigation.navigate('SignIn')
+    })
+    .catch(()=>{
+      console.log("Nao possui nenhum usuario")
+    })
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Tela ChatRoom</Text>
-      <Button title='Logon' onPress={ ()=> navigation.navigate('SignIn')}/>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.headerRoom}>
+        <View style={styles.headerRoomLeft}>
+          <TouchableOpacity onPress={handleSignOut}>
+            <Icon name='arrow-back' size={28} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Grupos</Text>
+        </View>
+
+        <TouchableOpacity>
+          <Icon name='search' size={28} color="#fff" />
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container:{
-    flex:1,
-    justifyContent: 'center',
+  container: {
+    flex: 1,
+  },
+  headerRoom:{
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 40,
+    paddingBottom: 20,
+    paddingHorizontal: 10,
+    backgroundColor: '#2e54d4',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20
+  },
+  headerRoomLeft:{
+    flexDirection: 'row',
     alignItems: 'center'
+  },
+  title:{
+    fontSize: 26,
+    fontWeight: 'vold',
+    color: '#fff',
+    paddingLeft: 10
   }
 })
