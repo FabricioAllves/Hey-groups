@@ -1,25 +1,34 @@
 import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet, SafeAreaView, TouchableOpacity, FlatList } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  TouchableOpacity,
+  FlatList,
+  Modal
+} from 'react-native';
 
 import auth from '@react-native-firebase/auth'
 import { useNavigation } from '@react-navigation/native'
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import FabButton from '../../components/FabButton';
+import ModalNewRoom from '../../components/ModalNewRoom';
 
 export default function ChatRoom() {
   const navigation = useNavigation()
   const [modalVisible, setModalVisible] = useState(false)
 
-  function handleSignOut(){
+  function handleSignOut() {
     auth()
-    .signOut()
-    .then(()=>{
-      navigation.navigate('SignIn')
-    })
-    .catch(()=>{
-      console.log("Nao possui nenhum usuario")
-    })
+      .signOut()
+      .then(() => {
+        navigation.navigate('SignIn')
+      })
+      .catch(() => {
+        console.log("Nao possui nenhum usuario")
+      })
   }
 
   return (
@@ -37,7 +46,11 @@ export default function ChatRoom() {
         </TouchableOpacity>
       </View>
 
-      <FabButton setVisible={ () => setModalVisible(true)}/>
+      <FabButton setVisible={() => setModalVisible(true)} />
+
+      <Modal visible={modalVisible} animationType='fade' transparent={true}>
+        <ModalNewRoom setVisible={() => setModalVisible(false)}/>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -46,7 +59,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  headerRoom:{
+  headerRoom: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingTop: 40,
@@ -56,11 +69,11 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20
   },
-  headerRoomLeft:{
+  headerRoomLeft: {
     flexDirection: 'row',
     alignItems: 'center'
   },
-  title:{
+  title: {
     fontSize: 26,
     fontWeight: 'vold',
     color: '#fff',
