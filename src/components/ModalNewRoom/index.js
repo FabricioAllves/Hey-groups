@@ -8,8 +8,47 @@ import {
   TouchableWithoutFeedback
 } from 'react-native';
 
+import firestore from '@react-native-firebase/firestore'
+import auth from '@react-native-firebase/auth'
+
 export default function ModalNewRoom({ setVisible }) {
-  const [roomName, setRoomName] = useState('')
+  const [roomName, setRoomName] = useState('');
+
+  const user = auth().currentUser.toJSON();
+
+  function handleButtonCreate() {
+    if(roomName === '') return;
+
+    createRoom()
+  }
+
+  // Create nova sala no firestore
+  function createRoom(){
+    firestore()
+    .collection('MESSAGE_THREADS')
+    .add({                             // esse add criar um id unico automatico 
+      name: roomName,
+      owner: user.uid,
+      lastMessage:{
+        text: `Grupo ${roomName} criado. Bem vindo(a)!`,
+        createAt: firestore.FieldValue.serverTimestamp(),
+      }
+    })   // Quando esse ducmento for criado ai no then recebera o docRef
+    .then((docRef) => {
+      docRef.collection('MESSAGES')
+      .add({
+        text: `Grupo ${roomName} criado. Bem vindo(a)!`,
+        createAt: firestore.FieldValue.serverTimestamp(),
+        system: true
+      })
+      .then(()=>{
+        setVisible()
+      })
+    })
+    .catch((err)=> {
+      console.log(err)
+    })
+  }
 
   return (
     <View style={styles.container}>
@@ -26,8 +65,12 @@ export default function ModalNewRoom({ setVisible }) {
           style={styles.input}
         />
 
-        <TouchableOpacity style={styles.buttonCreate}>
+        <TouchableOpacity style={styles.buttonCreate} onPress={handleButtonCreate}>
           <Text style={styles.buttonText}>Criar sala</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.backButton} onPress={setVisible}>
+          <Text>Fechar</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -47,13 +90,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 15,
   },
-  title:{
+  title: {
     textAlign: 'center',
     fontWeight: 'bold',
     fontSize: 19,
     color: '#000'
   },
-  input:{
+  input: {
     borderRadius: 5,
     height: 45,
     backgroundColor: '#ddd',
@@ -61,17 +104,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontSize: 16
   },
-  buttonCreate:{
+  buttonCreate: {
     borderRadius: 5,
     backgroundColor: '#2e54d4',
     height: 45,
-    alignItems:  'center',
+    alignItems: 'center',
     justifyContent: 'center'
   },
-  buttonText:{
+  buttonText: {
     fontSize: 19,
     fontWeight: '500',
     color: '#fff'
+  },
+  backButton: {
+    marginTop: 10,
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 
 })
