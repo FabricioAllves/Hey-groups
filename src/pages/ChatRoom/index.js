@@ -6,15 +6,19 @@ import {
   SafeAreaView,
   TouchableOpacity,
   FlatList,
-  Modal
+  Modal,
+  ActivityIndicator
 } from 'react-native';
 
 import auth from '@react-native-firebase/auth'
+import firestore from '@react-native-firebase/firestore'
+
 import { useNavigation, useIsFocused } from '@react-navigation/native'
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import FabButton from '../../components/FabButton';
 import ModalNewRoom from '../../components/ModalNewRoom';
+import ChatList from '../../components/ChatList';
 
 export default function ChatRoom() {
   const navigation = useNavigation()
@@ -23,12 +27,53 @@ export default function ChatRoom() {
   const [modalVisible, setModalVisible] = useState(false)
   const [user, setUser] = useState(null)
 
+  const [threads, setThreads] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [updateScreen, setUpdateScreen] = useState(false)
+
+
   useEffect(() => {
     const hasUser = auth().currentUser ? auth().currentUser.toJSON() : null;
     console.log(hasUser)
     setUser(hasUser)
 
-  }, [isFocused])
+  }, [isFocused]);
+
+  useEffect(() => {
+    let isActive = true
+
+    //Buscar no firestore
+    function getChats() {
+      firestore()
+        .collection('MESSAGE_THREADS')
+        .orderBy('lastMessage.createdAt', 'desc')
+        .limit(10)
+        .get()
+        .then((snapshot) => {
+          const threads = snapshot.docs.map(documentSnapshot => {
+            return {
+              _id: documentSnapshot.id,
+              name: '',
+              lastMessage: { text: '' },
+              ...documentSnapshot.data()
+            }
+          })
+
+          if (isActive) {
+            setThreads(threads);
+            setLoading(false)
+          }
+
+        })
+    }
+
+    getChats()
+
+    return () => {
+      isActive = false
+    }
+
+  }, [isFocused, updateScreen])
 
   function handleSignOut() {
     auth()
@@ -40,6 +85,12 @@ export default function ChatRoom() {
       .catch(() => {
         console.log("Nao possui nenhum usuario")
       })
+  }
+
+  if (loading) {
+    return (
+      <ActivityIndicator size='large' color='#555' />
+    )
   }
 
   return (
@@ -61,10 +112,23 @@ export default function ChatRoom() {
         </TouchableOpacity>
       </View>
 
+      <FlatList
+
+      showsVerticalScrollIndicator={false}
+      keyExtractor={ item => item._id}
+      data={threads}
+      renderItem={ ({ item }) => (
+        <ChatList data={item}/>
+      )}
+      />
+
       <FabButton setVisible={() => setModalVisible(true)} userStatus={user} />
 
       <Modal visible={modalVisible} animationType='fade' transparent={true}>
-        <ModalNewRoom setVisible={() => setModalVisible(false)} />
+        <ModalNewRoom 
+        setVisible={() => setModalVisible(false)} 
+        setUpdateScreen={ ()=>  setUpdateScreen(!updateScreen)}
+        />
       </Modal>
     </SafeAreaView>
   );
@@ -73,6 +137,7 @@ export default function ChatRoom() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor:'#fff'
   },
   headerRoom: {
     flexDirection: 'row',

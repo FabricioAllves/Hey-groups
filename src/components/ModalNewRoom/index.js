@@ -11,7 +11,7 @@ import {
 import firestore from '@react-native-firebase/firestore'
 import auth from '@react-native-firebase/auth'
 
-export default function ModalNewRoom({ setVisible }) {
+export default function ModalNewRoom({ setVisible, setUpdateScreen }) {
   const [roomName, setRoomName] = useState('');
 
   const user = auth().currentUser.toJSON();
@@ -19,7 +19,25 @@ export default function ModalNewRoom({ setVisible }) {
   function handleButtonCreate() {
     if(roomName === '') return;
 
-    createRoom()
+    // Deixar apenas cada usuario criar 4 grupos!
+    firestore().collection('MESSAGE_THREADS')
+    .get()
+    .then((snapshot) => {
+      let myThreads = 0;
+
+      snapshot.docs.map( docItem => {
+        if(docItem.data().owner == user.uid){
+          myThreads += 1;
+        }
+      })
+
+      if(myThreads >= 4){
+        alert("Você já atingiu o limite de grupos por usuario.")
+      }else{
+        createRoom()
+      }
+    })
+
   }
 
   // Create nova sala no firestore
@@ -31,18 +49,19 @@ export default function ModalNewRoom({ setVisible }) {
       owner: user.uid,
       lastMessage:{
         text: `Grupo ${roomName} criado. Bem vindo(a)!`,
-        createAt: firestore.FieldValue.serverTimestamp(),
+        createdAt: firestore.FieldValue.serverTimestamp(),
       }
     })   // Quando esse ducmento for criado ai no then recebera o docRef
     .then((docRef) => {
       docRef.collection('MESSAGES')
       .add({
         text: `Grupo ${roomName} criado. Bem vindo(a)!`,
-        createAt: firestore.FieldValue.serverTimestamp(),
+        createdAt: firestore.FieldValue.serverTimestamp(),
         system: true
       })
       .then(()=>{
-        setVisible()
+        setVisible();
+        setUpdateScreen()
       })
     })
     .catch((err)=> {
