@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   FlatList,
   Modal,
-  ActivityIndicator
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 
 import auth from '@react-native-firebase/auth'
@@ -87,6 +88,37 @@ export default function ChatRoom() {
       })
   }
 
+  function deleteRoom(ownerId, idRoom) {
+    // Verificacao para saber se userId e dono da sala para poder deletar
+    if (ownerId !== user?.uid) return;
+
+    Alert.alert(
+      "Atenção!",
+      "Você tem certeza que deseja deletar essa sala?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => { },
+          style: "cancel"
+        },
+        {
+          text: "OK",
+          onPress: () => handleDeleteRoom(idRoom)
+        }
+      ]
+    )
+  }
+
+  async function handleDeleteRoom(idRoom) {
+    await firestore()
+      .collection('MESSAGE_THREADS')
+      .doc(idRoom)
+      .delete()
+
+    setUpdateScreen(!updateScreen)
+
+  }
+
   if (loading) {
     return (
       <ActivityIndicator size='large' color='#555' />
@@ -114,20 +146,20 @@ export default function ChatRoom() {
 
       <FlatList
 
-      showsVerticalScrollIndicator={false}
-      keyExtractor={ item => item._id}
-      data={threads}
-      renderItem={ ({ item }) => (
-        <ChatList data={item}/>
-      )}
+        showsVerticalScrollIndicator={false}
+        keyExtractor={item => item._id}
+        data={threads}
+        renderItem={({ item }) => (
+          <ChatList data={item} deleteRoom={() => deleteRoom(item.owner, item._id)} />
+        )}
       />
 
       <FabButton setVisible={() => setModalVisible(true)} userStatus={user} />
 
       <Modal visible={modalVisible} animationType='fade' transparent={true}>
-        <ModalNewRoom 
-        setVisible={() => setModalVisible(false)} 
-        setUpdateScreen={ ()=>  setUpdateScreen(!updateScreen)}
+        <ModalNewRoom
+          setVisible={() => setModalVisible(false)}
+          setUpdateScreen={() => setUpdateScreen(!updateScreen)}
         />
       </Modal>
     </SafeAreaView>
@@ -137,7 +169,7 @@ export default function ChatRoom() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor:'#fff'
+    backgroundColor: '#fff'
   },
   headerRoom: {
     flexDirection: 'row',
