@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, FlatList, SafeAreaView } from 'react-native';
 
 import auth from '@react-native-firebase/auth'
 import firestore from '@react-native-firebase/firestore'
+
+import ChatMessage from '../../components/ChatMessage';
 
 export default function Messages({ route }) {
 
@@ -44,9 +46,14 @@ export default function Messages({ route }) {
   },[])
 
   return (
-    <View style={styles.container}>
-      <Text>Tela Mensagens</Text>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <FlatList
+      keyExtractor={ item => item._id}
+      data={messages}
+      renderItem={({ item }) => <ChatMessage data={item}/>}
+      style={{width: '100%'}}
+      />
+    </SafeAreaView>
   );
 }
 
