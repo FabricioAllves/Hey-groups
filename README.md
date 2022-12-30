@@ -53,7 +53,7 @@ Pré requisitos para rodar o projeto:
 
 ```bash
 # Clone o repositório
-$ git clone https://github.com/FabricioAllves/Hey-groups.git
+$ git clone https://github.com/FabricioAllves/HeyGrupos.git
 
 # Entre no repositório
 $ cd HeyGrupos
