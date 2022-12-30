@@ -56,7 +56,7 @@ Pré requisitos para rodar o projeto:
 $ git clone https://github.com/FabricioAllves/Hey-groups.git
 
 # Entre no repositório
-$ cd Ignite_Teams
+$ cd HeyGrupos
 
 # Com NPM
 # Instale as dependências
